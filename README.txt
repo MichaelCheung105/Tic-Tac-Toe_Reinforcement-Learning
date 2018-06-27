@@ -1,0 +1,1 @@
+This project aims to develop an agent that can play Tic-Tac-Toe
