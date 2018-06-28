@@ -27,6 +27,7 @@ def win(matrix):
 
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
 max_episode = 20000
 episode = 1
