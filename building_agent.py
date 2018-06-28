@@ -28,7 +28,7 @@ def win(matrix):
 import random
 import numpy as np
 
-max_episode = 100
+max_episode = 20000
 episode = 1
 seen_states = {}
 winning_list = []
@@ -49,13 +49,7 @@ while episode <= max_episode:
             if str(possible_state) not in seen_states:
                 seen_states[str(possible_state)] = max_episode
             
-            possible_action_expected_reward[possible_action] = seen_states[str(possible_state)]
-            
-        best_2_actions = []
-        while len(best_2_actions) <2:
-            best_2_actions.append(possible_action_expected_reward.index(sorted(possible_action_expected_reward).pop(-1)))
-            
-        final_decision = random.choice(best_2_actions)
+        final_decision = random.choice(possible_action_list)
         matrix[final_decision] = 1
         episode_states.append(str(matrix))
         
@@ -102,3 +96,10 @@ while episode <= max_episode:
     print(winner)
     winning_list.append(winner)
     episode +=1
+
+#plot a graph indicating probability for black to win
+x = list(range(1,max_episode+1))
+winning_ratio = [int(winning_list[0] == "black")]
+for k in range(2, max_episode+1):
+    winning_ratio.append(winning_ratio[-1] + (int(winning_list[k-1] == "black") - winning_ratio[-1])/k)
+plt.plot(x,winning_ratio)
