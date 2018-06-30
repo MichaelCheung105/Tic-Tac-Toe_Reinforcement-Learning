@@ -29,7 +29,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-max_episode = 1000
+max_episode = 100000
 episode = 1
 seen_states = {}
 winning_list = []
@@ -134,6 +134,8 @@ plt.plot(x,number_of_seen_states)
 plt.show()
 plt.clf()
 
+#hist
+plt.hist([seen_states[state]["expected_reward"] for state in seen_states.keys()])
 
 #play with trained tic-tac-toe
 def init_matrix():
@@ -146,7 +148,7 @@ def commove(mat, seen_states):
     possible_action_expected_reward = [-2]*9
                 
     for possible_action in possible_action_list:
-        possible_state = matrix.copy()
+        possible_state = mat.copy()
         possible_state[possible_action] = 1
         
         if str(possible_state) not in seen_states:
