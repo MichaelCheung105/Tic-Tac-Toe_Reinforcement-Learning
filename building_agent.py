@@ -29,7 +29,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-max_episode = 100000
+max_episode = 10000
 episode = 1
 seen_states = {}
 winning_list = []
@@ -152,7 +152,11 @@ def commove(mat, seen_states):
                 
     for possible_action in possible_action_list:
         possible_state = mat.copy()
-        possible_state[possible_action] = 1
+        
+        if sum(mat) == 0:
+            possible_state[possible_action] = 1
+        else:
+            possible_state[possible_action] = -1
         
         if str(possible_state) not in seen_states:
             seen_states[str(possible_state)] = {}
