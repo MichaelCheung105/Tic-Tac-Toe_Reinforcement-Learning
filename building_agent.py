@@ -29,7 +29,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-max_episode = 1000000
+max_episode = 1000
 episode = 1
 seen_states = {}
 winning_list = []
@@ -109,6 +109,9 @@ while episode <= max_episode:
         
         if winner == "white":
             seen_states[state]["expected_reward"] += (-1 - seen_states[state]["expected_reward"])/seen_states[state]["counter"]
+            
+        if winner == "draw":
+            seen_states[state]["expected_reward"] += (0 - seen_states[state]["expected_reward"])/seen_states[state]["counter"]
     
     print(np.array(matrix).reshape((3,3)))
     print(winner)
@@ -153,7 +156,7 @@ def commove(mat, seen_states):
         
         possible_action_expected_reward[possible_action] = seen_states[str(possible_state)]["expected_reward"]
         
-    final_decision = possible_action_expected_reward.index(sorted(possible_action_expected_reward).pop(-1))    
+    final_decision = possible_action_expected_reward.index(max(possible_action_expected_reward))
     mat[final_decision] = 1
     
     if win(mat):
