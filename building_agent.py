@@ -145,7 +145,10 @@ def init_matrix():
 def commove(mat, seen_states):
     #com move
     possible_action_list = [i for i, v in enumerate(mat) if v == 0]
-    possible_action_expected_reward = [-2]*9
+    if sum(mat) == 0:
+        possible_action_expected_reward = [-2]*9
+    else:
+        possible_action_expected_reward = [2]*9
                 
     for possible_action in possible_action_list:
         possible_state = mat.copy()
@@ -157,9 +160,13 @@ def commove(mat, seen_states):
             seen_states[str(possible_state)]["counter"] = 0
         
         possible_action_expected_reward[possible_action] = seen_states[str(possible_state)]["expected_reward"]
-        
-    final_decision = possible_action_expected_reward.index(max(possible_action_expected_reward))
-    mat[final_decision] = 1
+    
+    if sum(mat) == 0:
+        final_decision = possible_action_expected_reward.index(max(possible_action_expected_reward))
+        mat[final_decision] = 1
+    else:
+        final_decision = possible_action_expected_reward.index(min(possible_action_expected_reward))
+        mat[final_decision] = -1
     
     if win(mat):
         print("Com won")
@@ -169,12 +176,15 @@ def commove(mat, seen_states):
         return np.array(mat).reshape((3,3))
     else:
         return np.array(mat).reshape((3,3))
-        
+
 def mymove(mat, location):
     if mat[location] !=0:
         print("occupied")
     else:
-        mat[location] = -1
+        if sum(mat) == 0:
+            mat[location] = 1
+        else:
+            mat[location] = -1
         if win(mat):
             print("I win")
             return np.array(mat).reshape((3,3))
