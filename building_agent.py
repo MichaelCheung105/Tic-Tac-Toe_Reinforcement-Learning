@@ -24,13 +24,13 @@ def win(matrix):
     return won
 """define winning function"""
 
-
 import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-max_episode = 10000
+max_episode = 100000
 episode = 1
+epsilon = 0.3
 seen_states = {}
 winning_list = []
 number_of_seen_states = []
@@ -42,22 +42,30 @@ while episode <= max_episode:
     while 0 in matrix:
         #black move
         possible_action_list = [i for i, v in enumerate(matrix) if v == 0]
-                    
-        for possible_action in possible_action_list:
+        number_of_options = len(possible_action_list)
+        expected_reward_list = [0]*number_of_options
+        selection_prob_list = [0]*number_of_options
+        
+        for index, possible_action in enumerate(possible_action_list):
             possible_state = matrix.copy()
             possible_state[possible_action] = 1
             
             if str(possible_state) not in seen_states:
-                if win(possible_state):
-                    seen_states[str(possible_state)] = {}
-                    seen_states[str(possible_state)]["expected_reward"] = 1
-                    seen_states[str(possible_state)]["counter"] = 1
-                else:
-                    seen_states[str(possible_state)] = {}
-                    seen_states[str(possible_state)]["expected_reward"] = 0
-                    seen_states[str(possible_state)]["counter"] = 0
+                seen_states[str(possible_state)] = {}
+                seen_states[str(possible_state)]["expected_reward"] = 0
+                seen_states[str(possible_state)]["counter"] = 0
             
-        final_decision = random.choice(possible_action_list)
+            expected_reward_list[index] = seen_states[str(possible_state)]["expected_reward"]
+            if number_of_options != 1:
+                selection_prob_list[index] = 1/number_of_options - epsilon/(number_of_options - 1)
+            else:
+                selection_prob_list[index] = 1/number_of_options
+                
+        best_option_index = expected_reward_list.index(max(expected_reward_list))
+        if number_of_options != 1:
+            selection_prob_list[best_option_index] = 1/number_of_options + epsilon
+
+        final_decision = np.random.choice(possible_action_list, p=selection_prob_list)
         matrix[final_decision] = 1
         episode_states.append(str(matrix))
         
@@ -72,22 +80,30 @@ while episode <= max_episode:
         else:
             #white move
             possible_action_list = [i for i, v in enumerate(matrix) if v == 0]
+            number_of_options = len(possible_action_list)
+            expected_reward_list = [0]*number_of_options
+            selection_prob_list = [0]*number_of_options
             
-            for possible_action in possible_action_list:
+            for index, possible_action in enumerate(possible_action_list):
                 possible_state = matrix.copy()
                 possible_state[possible_action] = -1
                 
                 if str(possible_state) not in seen_states:
-                    if win(possible_state):
-                        seen_states[str(possible_state)] = {}
-                        seen_states[str(possible_state)]["expected_reward"] = -1
-                        seen_states[str(possible_state)]["counter"] = 1
-                    else:
-                        seen_states[str(possible_state)] = {}
-                        seen_states[str(possible_state)]["expected_reward"] = 0
-                        seen_states[str(possible_state)]["counter"] = 0
+                    seen_states[str(possible_state)] = {}
+                    seen_states[str(possible_state)]["expected_reward"] = 0
+                    seen_states[str(possible_state)]["counter"] = 0
                 
-            final_decision = random.choice(possible_action_list)
+                expected_reward_list[index] = seen_states[str(possible_state)]["expected_reward"]
+                if number_of_options != 1:
+                    selection_prob_list[index] = 1/number_of_options - epsilon/(number_of_options - 1)
+                else:
+                    selection_prob_list[index] = 1/number_of_options
+                
+            best_option_index = expected_reward_list.index(min(expected_reward_list))
+            if number_of_options != 1:
+                selection_prob_list[best_option_index] = 1/number_of_options + epsilon
+            
+            final_decision = np.random.choice(possible_action_list, p=selection_prob_list)
             matrix[final_decision] = -1
             episode_states.append(str(matrix))
                 
