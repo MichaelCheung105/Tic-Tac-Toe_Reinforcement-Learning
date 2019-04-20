@@ -6,13 +6,13 @@ class Environment:
         self.board = None
 
     def reset(self):
-        self.board = np.zeros(shape=(2, 3, 3))
+        self.board = np.zeros(shape=(3, 3, 2))
         done = False
         info = "New Game, Player 1's Turn"
         return self.board, done, info
 
     def step(self, action, player):
-        self.board[player][action] = 1
+        self.board.reshape((9, 2))[action, player] = 1
         reward, done, info = self.check_status(self.board, player)
         return self.board, reward, done, info
 
@@ -23,10 +23,13 @@ class Environment:
         if is_won:
             reward = 1
             info = f"The winner is Player {player + 1}"
+        elif done:
+            info = "Draw"
 
         return reward, done, info
 
-    def check_winner(self, board):
+    @staticmethod
+    def check_winner(board):
         check_list = []
         check_list.extend(np.sum(board, axis=0))
         check_list.extend(np.sum(board, axis=1))
@@ -36,6 +39,6 @@ class Environment:
         return is_won
 
     def check_if_done(self, board, player):
-        done = 0 not in np.sum(board, axis=0)
-        is_won = self.check_winner(board[player])
+        is_won = self.check_winner(board[:, :, player])
+        done = 0 not in np.sum(board, axis=2) or is_won
         return done, is_won

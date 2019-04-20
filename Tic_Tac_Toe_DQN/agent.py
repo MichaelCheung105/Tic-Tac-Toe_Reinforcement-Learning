@@ -6,8 +6,8 @@ from experience_pool import ExperiencePool
 class Agent:
     def __init__(self, config):
         self.config = config
-        self.eval_net = DQN(shape=(2, 3, 3))
-        self.target_net = DQN(shape=(2, 3, 3))
+        self.eval_net = DQN(shape=(3, 3, 2))
+        self.target_net = DQN(shape=(3, 3, 2))
         self.experience_pool = ExperiencePool()
         self.gamma = 0.9
         self.train_threshold = 100
@@ -17,8 +17,9 @@ class Agent:
 
     def get_action(self, state, epsilon):
         is_random = np.random.rand() < epsilon
-        action_list = list(range(9))
-        q_value_list = self.eval_net.model.predict(state) if not is_random else np.random.rand(9)
+        action_list = np.array(range(9))
+        model_state = np.expand_dims(state, axis=0)
+        q_value_list = self.eval_net.model.predict(model_state)[0] if not is_random else np.random.rand(9)
         feasible_action_mask = self.get_feasible_action_mask(state)
         max_index = np.argmax(q_value_list[feasible_action_mask])
         action = action_list[feasible_action_mask][max_index]
@@ -26,7 +27,7 @@ class Agent:
 
     @staticmethod
     def get_feasible_action_mask(state):
-        mask = np.sum(state, axis=0).reshape(-1) == 0
+        mask = np.sum(state, axis=2).reshape(-1) == 0
         return mask
 
     def store_s_a(self, state, action):
@@ -45,7 +46,7 @@ class Agent:
                     self.experience_pool.storage_count % self.experience_pool.pool_size == self.train_threshold:
                 state, action, reward, next_state, done = self.experience_pool.sample_experience()
                 q_values = self.eval_net.model.predict(state)
-                next_q_values = self.target_net.model.predict(next_state)
+                next_q_values = np.amax(self.target_net.model.predict(next_state), axis=1)
                 target = reward + self.gamma * next_q_values * abs(done - 1)
                 q_values[(range(len(q_values)), action)] = target
                 self.eval_net.model.train_on_batch(state, q_values)

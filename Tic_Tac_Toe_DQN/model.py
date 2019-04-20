@@ -1,6 +1,5 @@
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten, Conv2D
-from keras.layers.normalization import BatchNormalization
+from keras.layers import Dense, Flatten, Conv2D
 
 
 class DQN:

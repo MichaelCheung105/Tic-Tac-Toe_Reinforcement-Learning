@@ -1,6 +1,8 @@
 # Import Packages and Modules
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
+from collections import defaultdict
 from environment import Environment
 from agent import Agent
 from configuration import Config
@@ -14,13 +16,10 @@ class Runner:
                        1: second_mover
                        }
         self.trained_episode = 0
-        self.logs = {"both_greedy": {},
-                    "first_player_random": {},
-                    "second_player_random": {}
-                     }
+        self.logs = defaultdict(lambda: defaultdict(lambda: 0))
 
     def start(self):
-        for train_episode in range(self.config.total_train_episode):
+        for train_episode in range(1, self.config.total_train_episode + 1):
             if train_episode % self.config.intermediate_test_frequency == 0:
                 self.config.run_mode = 'test'
                 for test_episode in range(self.config.number_of_episode_per_intermediate_test):
@@ -35,6 +34,8 @@ class Runner:
         self.log_performance()
 
         for key, player in self.player.items():
+            if not os.path.exists('./models'):
+                os.makedirs('./models')
             player.eval_net.model.save(f"./models/player_{key}.h5")
 
     def play_tic_tac_toe(self, episode, test_condition=None):
@@ -48,6 +49,8 @@ class Runner:
             action = self.player[player].get_action(state, epsilon)
             self.player[player].store_s_a(state, action)
             state, reward, done, info = self.env.step(action, player)
+            print(state[:, :, 0])
+            print(state[:, :, 1])
             self.player[1 - player].store_r_s_d(-reward, state, done)
 
             if done:
@@ -81,10 +84,13 @@ class Runner:
 
     def log_performance(self):
         for test_condition, records in self.logs.items():
-            df = pd.DataFrame.from_dict(records)
-            fig = df.plot(title=test_condition)
-            fig.savefig(f"./performance/{test_condition}.jpg")
+            df = pd.DataFrame.from_dict(records, orient='index')
+            df.plot(title=test_condition)
+            if not os.path.exists('./performance'):
+                os.makedirs('./performance')
+            plt.savefig(f"./performance/{test_condition}.jpg")
             plt.close()
+
 
 if __name__ == "__main__":
     env = Environment()

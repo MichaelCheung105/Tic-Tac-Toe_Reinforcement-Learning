@@ -14,18 +14,17 @@ class ExperiencePool:
 
     def sample_experience(self):
         sample_index = np.random.randint(0, self.pool_size, self.batch_size)
-        sample_state = self.state[sample_index]
-        sample_action = self.action[sample_index]
-        sample_reward = self.reward[sample_index]
-        sample_next_state = self.next_state[sample_index]
-        sample_done = self.done[sample_index]
+        sample_state = np.array(self.state)[sample_index]
+        sample_action = np.array(self.action)[sample_index]
+        sample_reward = np.array(self.reward)[sample_index]
+        sample_next_state = np.array(self.next_state)[sample_index]
+        sample_done = np.array(self.done)[sample_index]
         return sample_state, sample_action, sample_reward, sample_next_state, sample_done
 
     def store_s_a(self, state, action):
         index = self.storage_count % self.pool_size
         self.state[index] = state
         self.action[index] = action
-        return index
 
     def store_r_s_d(self, reward, next_state, done):
         index = self.storage_count % self.pool_size
