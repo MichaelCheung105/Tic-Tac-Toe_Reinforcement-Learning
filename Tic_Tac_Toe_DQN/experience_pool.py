@@ -21,15 +21,15 @@ class ExperiencePool:
         sample_done = self.done[sample_index]
         return sample_state, sample_action, sample_reward, sample_next_state, sample_done
 
-    def store_s_a_r_d(self, state, action, reward, done):
+    def store_s_a(self, state, action):
         index = self.storage_count % self.pool_size
         self.state[index] = state
         self.action[index] = action
-        self.reward[index] = reward
-        self.done[index] = done
         return index
 
-    def store_next_state(self, next_state):
+    def store_r_s_d(self, reward, next_state, done):
         index = self.storage_count % self.pool_size
+        self.reward[index] = reward
+        self.done[index] = done
         self.next_state[index] = next_state
         self.storage_count += 1
