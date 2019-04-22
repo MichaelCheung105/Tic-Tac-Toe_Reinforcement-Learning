@@ -2,7 +2,7 @@ import numpy as np
 
 
 class ExperiencePool:
-    def __init__(self, pool_size=1000, batch_size=100):
+    def __init__(self, pool_size=1000, batch_size=200):
         self.state = [None] * pool_size
         self.action = [None] * pool_size
         self.reward = [None] * pool_size
@@ -23,12 +23,12 @@ class ExperiencePool:
 
     def store_s_a(self, state, action):
         index = self.storage_count % self.pool_size
-        self.state[index] = state
+        self.state[index] = state.copy()
         self.action[index] = action
 
     def store_r_s_d(self, reward, next_state, done):
         index = self.storage_count % self.pool_size
         self.reward[index] = reward
         self.done[index] = done
-        self.next_state[index] = next_state
+        self.next_state[index] = next_state.copy()
         self.storage_count += 1

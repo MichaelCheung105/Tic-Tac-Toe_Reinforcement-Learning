@@ -16,7 +16,7 @@ class Runner:
                        1: second_mover
                        }
         self.trained_episode = 0
-        self.logs = defaultdict(lambda: defaultdict(lambda: 0))
+        self.logs = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: 0)))
 
     def start(self):
         for train_episode in range(1, self.config.total_train_episode + 1):
@@ -31,7 +31,9 @@ class Runner:
                 self.play_tic_tac_toe(train_episode)
                 self.trained_episode = train_episode
 
-        self.log_performance()
+            if train_episode % self.config.log_frequency == 0:
+                self.log_result(train_episode)
+                # self.log_experience_pool(train_episode)
 
         for key, player in self.player.items():
             if not os.path.exists('./models'):
@@ -39,8 +41,7 @@ class Runner:
             player.eval_net.model.save(f"./models/player_{key}.h5")
 
     def play_tic_tac_toe(self, episode, test_condition=None):
-        state, done, info = self.env.reset()
-        player = 1
+        state, done, info, player = self.env.reset()
         print(f"{self.config.run_mode} mode, episode {episode}, {info}")
 
         while not done:
@@ -49,8 +50,6 @@ class Runner:
             action = self.player[player].get_action(state, epsilon)
             self.player[player].store_s_a(state, action)
             state, reward, done, info = self.env.step(action, player)
-            print(state[:, :, 0])
-            print(state[:, :, 1])
             self.player[1 - player].store_r_s_d(-reward, state, done)
 
             if done:
@@ -58,9 +57,9 @@ class Runner:
 
             print(f"{self.config.run_mode} mode, episode {episode}: {info}")
 
-        for key, player in self.player.items():
-            player.reset()
-            player.train()
+        for key, agent in self.player.items():
+            agent.reset()
+            agent.train()
 
         if self.config.run_mode == 'test':
             self.record_result_of_first_player(player, reward, test_condition)
@@ -80,16 +79,24 @@ class Runner:
 
     def record_result_of_first_player(self, player, reward, test_condition):
         reward = reward if player == 0 else -reward
-        self.logs[test_condition][self.trained_episode] += reward
+        self.logs['result'][test_condition][self.trained_episode] += reward
 
-    def log_performance(self):
+    def log_result(self, episode):
         for test_condition, records in self.logs.items():
-            df = pd.DataFrame.from_dict(records, orient='index')
+            df = pd.DataFrame.from_dict(records)
             df.plot(title=test_condition)
-            if not os.path.exists('./performance'):
-                os.makedirs('./performance')
-            plt.savefig(f"./performance/{test_condition}.jpg")
+            if not os.path.exists('./result'):
+                os.makedirs('./result')
+            plt.savefig(f"./result/{test_condition}_Ep{episode}.jpg")
             plt.close()
+
+    def log_experience_pool(self, episode):
+        for key, agent in self.player.items():
+            states = agent.experience_pool.state
+            actions = agent.experience_pool.action
+            rewards = agent.experience_pool.reward
+            next_states = agent.experience_pool.next_state
+            done = agent.experience_pool.done
 
 
 if __name__ == "__main__":

@@ -49,7 +49,7 @@ class Agent:
                 next_q_values = np.amax(self.target_net.model.predict(next_state), axis=1)
                 target = reward + self.gamma * next_q_values * abs(done - 1)
                 q_values[(range(len(q_values)), action)] = target
-                self.eval_net.model.train_on_batch(state, q_values)
+                self.eval_net.model.fit(state, q_values, batch_size=len(state), epochs=10)
                 self.train_count += 1
 
             if self.train_count % self.target_net_update_threshold == 0:
