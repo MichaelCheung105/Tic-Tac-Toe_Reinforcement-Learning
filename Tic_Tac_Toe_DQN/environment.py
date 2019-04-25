@@ -7,10 +7,11 @@ class Environment:
 
     def reset(self):
         self.board = np.zeros(shape=(3, 3, 2))
+        reward = None
         done = False
         info = "New Game, Player 1's Turn"
         player = 1
-        return self.board, done, info, player
+        return self.board, reward, done, info, player
 
     def step(self, action, player):
         self.board.reshape((9, 2))[action, player] = 1

@@ -2,10 +2,10 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-from collections import defaultdict
 from environment import Environment
 from agent import Agent
 from configuration import config
+from rl_logging import logs
 
 
 class Runner:
@@ -15,7 +15,6 @@ class Runner:
                        1: second_mover
                        }
         self.trained_episode = 0
-        self.logs = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: 0)))
 
     def start(self):
         for train_episode in range(1, config.total_train_episode + 1):
@@ -32,16 +31,16 @@ class Runner:
                 self.trained_episode = train_episode
 
             if train_episode % config.log_frequency == 0:
-                self.log_result(train_episode)
+                self.export_logs(train_episode)
                 # self.log_experience_pool(train_episode)  #TODO: complete the logging of experience pool
 
         for key, player in self.player.items():
             if not os.path.exists('./models'):
                 os.makedirs('./models')
-            player.eval_net.model.save(f"./models/player_{key}.h5")
+            player.eval_net.model.save(f"./models/player_{key+1}.h5")
 
     def play_tic_tac_toe(self, episode, test_condition=None):
-        state, done, info, player = self.env.reset()
+        state, reward, done, info, player = self.env.reset()
         print(f"{config.run_mode} mode, episode {episode}, {info}")
 
         while not done:
@@ -62,7 +61,8 @@ class Runner:
             agent.train()
 
         if config.run_mode == 'test':
-            self.record_result_of_first_player(player, reward, test_condition)
+            assert reward is not None
+            self.record_result_of_players(player, reward, test_condition)
 
     def determine_epsilon(self, episode, player, test_condition):
         if player == 0 and test_condition == "first_player_random":
@@ -79,17 +79,30 @@ class Runner:
         epsilon = max(1 - episode / config.total_train_episode, config.min_epsilon) if config.run_mode == 'train' else 0
         return epsilon
 
-    def record_result_of_first_player(self, player, reward, test_condition):
-        reward = reward if player == 0 else -reward
-        self.logs['result'][test_condition][self.trained_episode] += reward
+    def record_result_of_players(self, player, reward, test_condition):
+        # Record how many times the each player loses the game
+        losses_of_first_player = -reward if player == 1 else 0
+        logs['result']["player_{0}".format(1)][test_condition][self.trained_episode] += losses_of_first_player
+        losses_of_second_player = -reward if player == 0 else 0
+        logs['result']["player_{0}".format(2)][test_condition][self.trained_episode] += losses_of_second_player
 
-    def log_result(self, episode):
-        for test_condition, records in self.logs.items():
+    def export_logs(self, episode):
+        for log_category, log_content in logs.items():
+            if log_category == 'result':
+                self.log_results(episode, log_category, log_content)
+            else:
+                pass
+
+    @staticmethod
+    def log_results(episode, log_category, log_content):
+        for player, records in log_content.items():
             df = pd.DataFrame.from_dict(records)
-            df.plot(title=test_condition)
+            df.plot(title=f"# of losses of {player}", grid=True)
+            plt.xlabel("# of trained episodes")
+            plt.ylabel("Total number of losses")
             if not os.path.exists('./result'):
                 os.makedirs('./result')
-            plt.savefig(f"./result/{test_condition}_Ep{episode}.jpg")
+            plt.savefig(f"./result/{log_category}_of_{player}_Ep{episode}.jpg")
             plt.close()
 
     def log_experience_pool(self, episode):
@@ -100,7 +113,6 @@ class Runner:
             rewards = agent.experience_pool.reward
             next_states = agent.experience_pool.next_state
             done = agent.experience_pool.done
-
 
 
 if __name__ == "__main__":
