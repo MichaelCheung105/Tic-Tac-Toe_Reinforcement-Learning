@@ -25,6 +25,7 @@ class Runner:
                     self.play_tic_tac_toe(test_episode, "both_greedy")
                     self.play_tic_tac_toe(test_episode, "first_player_random")
                     self.play_tic_tac_toe(test_episode, "second_player_random")
+                    self.play_tic_tac_toe(test_episode, "both_random")
             else:
                 config.run_mode = 'train'
                 self.play_tic_tac_toe(train_episode)
@@ -67,6 +68,8 @@ class Runner:
         if player == 0 and test_condition == "first_player_random":
             epsilon = 1
         elif player == 1 and test_condition == "second_player_random":
+            epsilon = 1
+        elif test_condition == "both_random":
             epsilon = 1
         else:
             epsilon = self.default_epsilon(episode)
