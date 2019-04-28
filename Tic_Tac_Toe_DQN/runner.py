@@ -34,7 +34,7 @@ class Runner:
 
             if train_episode % config.log_frequency == 0:
                 self.export_logs(train_episode)
-                # self.log_experience_pool(train_episode)  #TODO: complete the logging of experience pool
+                self.log_experience_pool(train_episode)
 
         for key, player in self.player.items():
             directory_path = f"./models/{config.experiment_name}"
@@ -100,7 +100,7 @@ class Runner:
 
     @staticmethod
     def log_results(episode, log_category, log_content):
-        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(20,60))
+        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(30, 10))
         plot_index = 0
         for player, records in log_content.items():
             df = pd.DataFrame.from_dict(records)
@@ -116,7 +116,6 @@ class Runner:
         plt.close()
 
     def log_experience_pool(self, episode):
-        #TODO: Complete logging of experience pool
         experience_pool_dict = defaultdict(lambda: {})
         for key, agent in self.player.items():
             player_dict = experience_pool_dict[f"player_{key+1}"]
@@ -124,8 +123,15 @@ class Runner:
             player_dict["actions"] = agent.experience_pool.action
             player_dict["rewards"] = agent.experience_pool.reward
             player_dict["next_states"] = agent.experience_pool.next_state
-            player_dict["next_actions"] = agent.experience_pool.next_actions
+            player_dict["next_actions"] = agent.experience_pool.next_action
             player_dict["done"] = agent.experience_pool.done
+
+        directory_path = f"./experience_pool/{config.experiment_name}"
+        if not os.path.exists(directory_path):
+            os.makedirs(directory_path)
+        output_path = os.path.join(directory_path, f"experience_pool_output_Ep{episode}.p")
+        with open(output_path, 'wb') as experience_pool_output:
+            pickle.dump(experience_pool_dict, experience_pool_output)
 
 
 if __name__ == "__main__":
