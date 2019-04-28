@@ -34,7 +34,7 @@ class Runner:
 
             if train_episode % config.log_frequency == 0:
                 self.export_logs(train_episode)
-                # self.log_experience_pool(train_episode)
+                self.log_experience_pool(train_episode)
 
         for key, player in self.player.items():
             directory_path = f"./logs/{config.experiment_name}/models"
@@ -100,13 +100,14 @@ class Runner:
 
     @staticmethod
     def log_results(episode, log_category, log_content):
-        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(30, 10))
+        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(30, 10), sharey='all')
+        for ax in axes:
+            ax.set_xlabel("# of trained episodes")
+            ax.set_ylabel("Total number of losses")
         plot_index = 0
         for player, records in log_content.items():
             df = pd.DataFrame.from_dict(records)
             df.plot(title=f"# of losses of {player}", grid=True, ax=axes[plot_index])
-            plt.xlabel("# of trained episodes")
-            plt.ylabel("Total number of losses")
             plot_index += 1
         directory_path = f"./logs/{config.experiment_name}/result"
         if not os.path.exists(directory_path):
@@ -116,8 +117,9 @@ class Runner:
         plt.close()
 
     def log_experience_pool(self, episode):
-        experience_pool_dict = defaultdict(lambda: {})
+        experience_pool_dict = {}
         for key, agent in self.player.items():
+            experience_pool_dict[f"player_{key+1}"] = {}
             player_dict = experience_pool_dict[f"player_{key+1}"]
             player_dict["states"] = agent.experience_pool.state
             player_dict["actions"] = agent.experience_pool.action
