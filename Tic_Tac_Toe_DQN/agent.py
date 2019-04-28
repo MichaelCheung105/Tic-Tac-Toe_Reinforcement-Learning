@@ -45,11 +45,19 @@ class Agent:
         if config.run_mode == 'train':
             if self.experience_pool.storage_count >= self.experience_pool.pool_size and \
                     self.experience_pool.storage_count % self.experience_pool.pool_size == self.train_frequency:
-                state, action, reward, next_state, done = self.experience_pool.sample_experience()
+                state, action, reward, next_state, next_action, done = self.experience_pool.sample_experience()
                 q_values = self.eval_net.model.predict(state)
-                next_q_values = np.amax(self.target_net.model.predict(next_state), axis=1)
+                dim_length = range(len(q_values))
+                if config.train_method == 'qlearning':
+                    next_q_values = np.amax(self.target_net.model.predict(next_state), axis=1)
+                elif config.train_method == 'sarsa':
+                    next_q_values = self.target_net.model.predict(next_state)[(dim_length, next_action)]
+                elif config.train_method == 'ddqn':
+                    pass
+                else:
+                    raise Exception("config.train_method should be one of the following: [qlearning, sarsa, ddqn]")
                 target = reward + self.gamma * next_q_values * abs(done - 1)
-                q_values[(range(len(q_values)), action)] = target
+                q_values[(dim_length, action)] = target
                 self.eval_net.model.train_on_batch(state, q_values)
                 self.train_count += 1
                 print(f"Eval net is trained for {self.train_count} times")

@@ -75,7 +75,8 @@ class Runner:
             epsilon = self.default_epsilon(episode)
         return epsilon
 
-    def default_epsilon(self, episode):
+    @staticmethod
+    def default_epsilon(episode):
         epsilon = max(1 - episode / config.total_train_episode, config.min_epsilon) if config.run_mode == 'train' else 0
         return epsilon
 

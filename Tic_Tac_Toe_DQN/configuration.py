@@ -16,6 +16,7 @@ class Config:
         self.gamma = 0.9
         self.train_frequency = 100
         self.target_net_update_threshold = 10
+        self.train_method = 'sarsa'  # qlearning, sarsa or ddqn
 
 
 config = Config()
