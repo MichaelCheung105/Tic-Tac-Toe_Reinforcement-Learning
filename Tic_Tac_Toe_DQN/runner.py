@@ -34,10 +34,10 @@ class Runner:
 
             if train_episode % config.log_frequency == 0:
                 self.export_logs(train_episode)
-                self.log_experience_pool(train_episode)
+                # self.log_experience_pool(train_episode)
 
         for key, player in self.player.items():
-            directory_path = f"./models/{config.experiment_name}"
+            directory_path = f"./logs/{config.experiment_name}/models"
             if not os.path.exists(directory_path):
                 os.makedirs(directory_path)
             output_path = os.path.join(directory_path, f"player_{key+1}.h5")
@@ -108,7 +108,7 @@ class Runner:
             plt.xlabel("# of trained episodes")
             plt.ylabel("Total number of losses")
             plot_index += 1
-        directory_path = f"./result/{config.experiment_name}"
+        directory_path = f"./logs/{config.experiment_name}/result"
         if not os.path.exists(directory_path):
             os.makedirs(directory_path)
         output_path = os.path.join(directory_path, f"{log_category}_Ep{episode}.jpg")
@@ -126,7 +126,7 @@ class Runner:
             player_dict["next_actions"] = agent.experience_pool.next_action
             player_dict["done"] = agent.experience_pool.done
 
-        directory_path = f"./experience_pool/{config.experiment_name}"
+        directory_path = f"./logs/{config.experiment_name}/experience_pool"
         if not os.path.exists(directory_path):
             os.makedirs(directory_path)
         output_path = os.path.join(directory_path, f"experience_pool_output_Ep{episode}.p")
