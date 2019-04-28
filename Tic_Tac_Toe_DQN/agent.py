@@ -46,8 +46,7 @@ class Agent:
             if self.experience_pool.storage_count >= self.experience_pool.pool_size and \
                     self.experience_pool.storage_count % self.experience_pool.pool_size == self.train_frequency:
                 state, action, reward, next_state, next_action, done = self.experience_pool.sample_experience()
-                q_values = self.eval_net.model.predict(state)
-                dim_length = range(len(q_values))
+                q_values, next_q_values, dim_length = self.eval_net.model.predict(state), None, range(len(state))
                 if config.train_method == 'qlearning':
                     next_q_values = np.amax(self.target_net.model.predict(next_state), axis=1)
                 elif config.train_method == 'sarsa':
@@ -56,6 +55,7 @@ class Agent:
                     pass
                 else:
                     raise Exception("config.train_method should be one of the following: [qlearning, sarsa, ddqn]")
+                assert next_q_values is not None
                 target = reward + self.gamma * next_q_values * abs(done - 1)
                 q_values[(dim_length, action)] = target
                 self.eval_net.model.train_on_batch(state, q_values)
