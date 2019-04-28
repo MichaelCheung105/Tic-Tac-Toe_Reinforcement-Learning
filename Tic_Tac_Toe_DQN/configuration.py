@@ -1,5 +1,6 @@
 class Config:
     def __init__(self):
+        self.experiment_name = 'experiment_name'
         self.run_mode = None
         self.enable_agent = True
         self.total_train_episode = 100000

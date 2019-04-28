@@ -1,7 +1,9 @@
 # Import Packages and Modules
 import os
+import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
+from collections import defaultdict
 from environment import Environment
 from agent import Agent
 from configuration import config
@@ -35,9 +37,11 @@ class Runner:
                 # self.log_experience_pool(train_episode)  #TODO: complete the logging of experience pool
 
         for key, player in self.player.items():
-            if not os.path.exists('./models'):
-                os.makedirs('./models')
-            player.eval_net.model.save(f"./models/player_{key+1}.h5")
+            directory_path = f"./models/{config.experiment_name}"
+            if not os.path.exists(directory_path):
+                os.makedirs(directory_path)
+            output_path = os.path.join(directory_path, f"player_{key+1}.h5")
+            player.eval_net.model.save(output_path)
 
     def play_tic_tac_toe(self, episode, test_condition=None):
         state, reward, done, info, player = self.env.reset()
@@ -96,24 +100,32 @@ class Runner:
 
     @staticmethod
     def log_results(episode, log_category, log_content):
+        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(20,60))
+        plot_index = 0
         for player, records in log_content.items():
             df = pd.DataFrame.from_dict(records)
-            df.plot(title=f"# of losses of {player}", grid=True)
+            df.plot(title=f"# of losses of {player}", grid=True, ax=axes[plot_index])
             plt.xlabel("# of trained episodes")
             plt.ylabel("Total number of losses")
-            if not os.path.exists('./result'):
-                os.makedirs('./result')
-            plt.savefig(f"./result/{log_category}_of_{player}_Ep{episode}.jpg")
-            plt.close()
+            plot_index += 1
+        directory_path = f"./result/{config.experiment_name}"
+        if not os.path.exists(directory_path):
+            os.makedirs(directory_path)
+        output_path = os.path.join(directory_path, f"{log_category}_Ep{episode}.jpg")
+        plt.savefig(output_path)
+        plt.close()
 
     def log_experience_pool(self, episode):
-        # TODO: complete the logging of experience pool
+        #TODO: Complete logging of experience pool
+        experience_pool_dict = defaultdict(lambda: {})
         for key, agent in self.player.items():
-            states = agent.experience_pool.state
-            actions = agent.experience_pool.action
-            rewards = agent.experience_pool.reward
-            next_states = agent.experience_pool.next_state
-            done = agent.experience_pool.done
+            player_dict = experience_pool_dict[f"player_{key+1}"]
+            player_dict["states"] = agent.experience_pool.state
+            player_dict["actions"] = agent.experience_pool.action
+            player_dict["rewards"] = agent.experience_pool.reward
+            player_dict["next_states"] = agent.experience_pool.next_state
+            player_dict["next_actions"] = agent.experience_pool.next_actions
+            player_dict["done"] = agent.experience_pool.done
 
 
 if __name__ == "__main__":
