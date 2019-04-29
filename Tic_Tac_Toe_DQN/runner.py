@@ -3,7 +3,6 @@ import os
 import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
-from collections import defaultdict
 from environment import Environment
 from agent import Agent
 from configuration import config
@@ -11,7 +10,7 @@ from rl_logging import logs
 
 
 class Runner:
-    def __init__(self, env, first_mover, second_mover):
+    def __init__(self, env: Environment, first_mover: Agent, second_mover: Agent):
         self.env = env
         self.player = {0: first_mover,
                        1: second_mover
@@ -140,5 +139,5 @@ if __name__ == "__main__":
     env = Environment()
     first_mover = Agent()
     second_mover = Agent()
-    runner = Runner(env, first_mover, second_mover)
+    runner = Runner(env=env, first_mover=first_mover, second_mover=second_mover)
     runner.start()

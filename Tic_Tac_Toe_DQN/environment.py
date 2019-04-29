@@ -1,4 +1,5 @@
 import numpy as np
+from configuration import config
 
 
 class Environment:
@@ -23,7 +24,7 @@ class Environment:
         reward, info = 0, f"Player {2-player}'s Turn"
 
         if is_won:
-            reward = 1
+            reward = config.reward
             info = f"The winner is Player {player + 1}"
         elif done:
             info = "Draw"

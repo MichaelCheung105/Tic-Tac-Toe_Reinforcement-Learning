@@ -58,7 +58,7 @@ class Agent:
                 assert next_q_values is not None
                 target = reward + self.gamma * next_q_values * abs(done - 1)
                 q_values[(dim_length, action)] = target
-                self.eval_net.model.train_on_batch(state, q_values)
+                self.eval_net.model.fit(state, q_values, epochs=config.epochs, batch_size=len(state))
                 self.train_count += 1
                 print(f"Eval net is trained for {self.train_count} times")
 

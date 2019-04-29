@@ -10,7 +10,7 @@ class Config:
 
         # Experience Pool
         self.pool_size = 1000
-        self.batch_size = 200
+        self.batch_size = 500
 
         # Agent
         self.min_epsilon = 0.2
@@ -18,6 +18,12 @@ class Config:
         self.train_frequency = 100
         self.target_net_update_threshold = 10
         self.train_method = 'sarsa'  # qlearning, sarsa or ddqn
+
+        # Training
+        self.epochs = 20
+
+        # Reward Shaping
+        self.reward = 10
 
 
 config = Config()
