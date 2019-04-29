@@ -1,12 +1,12 @@
 class Config:
     def __init__(self):
+        # Basic experiment settings
         self.experiment_name = 'experiment_name'
         self.run_mode = None
         self.enable_agent = True
-        self.total_train_episode = 100000
+        self.total_train_episode = 150000
         self.intermediate_test_frequency = 1000
         self.number_of_episode_per_intermediate_test = 100
-        self.log_frequency = 10000
 
         # Experience Pool
         self.pool_size = 1000
@@ -24,6 +24,9 @@ class Config:
 
         # Reward Shaping
         self.reward = 10
+
+        # Logging
+        self.log_frequency = 10000
 
 
 config = Config()

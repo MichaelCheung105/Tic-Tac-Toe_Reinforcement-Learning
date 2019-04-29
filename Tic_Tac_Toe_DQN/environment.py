@@ -21,13 +21,16 @@ class Environment:
 
     def check_status(self, board, player):
         done, is_won = self.check_if_done(board, player)
-        reward, info = 0, f"Player {2-player}'s Turn"
 
         if is_won:
             reward = config.reward
             info = f"The winner is Player {player + 1}"
         elif done:
+            reward = 0
             info = "Draw"
+        else:
+            reward = 0
+            info = f"Player {2-player}'s Turn"
 
         return reward, done, info
 

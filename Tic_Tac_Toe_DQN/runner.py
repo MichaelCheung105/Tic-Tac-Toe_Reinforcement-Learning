@@ -2,6 +2,7 @@
 import os
 import pickle
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from environment import Environment
 from agent import Agent
@@ -20,26 +21,38 @@ class Runner:
     def start(self):
         for train_episode in range(1, config.total_train_episode + 1):
             if train_episode % config.intermediate_test_frequency == 0:
-                config.run_mode = 'test'
-                for test_episode in range(config.number_of_episode_per_intermediate_test):
-                    self.play_tic_tac_toe(test_episode, "both_greedy")
-                    self.play_tic_tac_toe(test_episode, "first_player_random")
-                    self.play_tic_tac_toe(test_episode, "second_player_random")
-                    self.play_tic_tac_toe(test_episode, "both_random")
+                self.run_test_mode()
             else:
-                config.run_mode = 'train'
-                self.play_tic_tac_toe(train_episode)
-                self.trained_episode = train_episode
+                self.run_train_mode(train_episode)
 
-            if train_episode % config.log_frequency == 0:
-                self.export_logs(train_episode)
-                self.log_experience_pool(train_episode)
+            self.log_outputs(train_episode)
 
+        self.save_models()
+
+    def log_outputs(self, train_episode):
+        if train_episode % config.log_frequency == 0:
+            self.export_logs(train_episode)
+            self.log_experience_pool(train_episode)
+
+    def run_train_mode(self, train_episode):
+        config.run_mode = 'train'
+        self.play_tic_tac_toe(train_episode)
+        self.trained_episode = train_episode
+
+    def run_test_mode(self):
+        config.run_mode = 'test'
+        for test_episode in range(config.number_of_episode_per_intermediate_test):
+            self.play_tic_tac_toe(test_episode, "both_greedy")
+            self.play_tic_tac_toe(test_episode, "first_player_random")
+            self.play_tic_tac_toe(test_episode, "second_player_random")
+            self.play_tic_tac_toe(test_episode, "both_random")
+
+    def save_models(self):
         for key, player in self.player.items():
             directory_path = f"./logs/{config.experiment_name}/models"
             if not os.path.exists(directory_path):
                 os.makedirs(directory_path)
-            output_path = os.path.join(directory_path, f"player_{key+1}.h5")
+            output_path = os.path.join(directory_path, f"player_{key + 1}.h5")
             player.eval_net.model.save(output_path)
 
     def play_tic_tac_toe(self, episode, test_condition=None):
@@ -49,7 +62,8 @@ class Runner:
         while not done:
             player = 1 - player
             epsilon = self.determine_epsilon(episode, player, test_condition)
-            action = self.player[player].get_action(state, epsilon)
+            model_state = self.get_model_state(state)
+            action = self.player[player].get_action(model_state, epsilon)
             self.player[player].store_s_a(state, action)
             state, reward, done, info = self.env.step(action, player)
             self.player[1 - player].store_r_s_d(-reward, state, done)
@@ -66,6 +80,11 @@ class Runner:
         if config.run_mode == 'test':
             assert reward is not None
             self.record_result_of_players(player, reward, test_condition)
+
+    @staticmethod
+    def get_model_state(state):
+        model_state = np.expand_dims(state, axis=0)
+        return model_state
 
     def determine_epsilon(self, episode, player, test_condition):
         if player == 0 and test_condition == "first_player_random":

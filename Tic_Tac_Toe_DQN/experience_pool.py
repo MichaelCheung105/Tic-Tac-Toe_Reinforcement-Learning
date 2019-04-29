@@ -15,7 +15,7 @@ class ExperiencePool:
         self.storage_count = 0
 
     def sample_experience(self):
-        sample_index = np.random.randint(0, config.pool_size, config.batch_size)
+        sample_index = np.random.randint(0, self.pool_size, self.batch_size)
         sample_state = np.array(self.state)[sample_index]
         sample_action = np.array(self.action)[sample_index]
         sample_reward = np.array(self.reward)[sample_index]
