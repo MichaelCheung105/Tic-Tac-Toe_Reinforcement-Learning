@@ -7,8 +7,6 @@ from configuration import config
 class Agent:
     def __init__(self):
         self.action_list = np.array(range(9))
-        self.eval_net = DQN(shape=(3, 3, 2))
-        self.target_net = DQN(shape=(3, 3, 2))
         self.experience_pool = ExperiencePool()
         self.gamma = config.gamma
         self.train_frequency = config.train_frequency
@@ -16,6 +14,10 @@ class Agent:
         self.train_count = 0
         self.target_net_update_count = 0
         self.is_state_stored = False
+
+        shape = (3, 3, 1) if config.state_dim_reduction else (3, 3, 2)
+        self.eval_net = DQN(shape=shape)
+        self.target_net = DQN(shape=shape)
 
     def get_action(self, model_state, epsilon):
         is_random = np.random.rand() < epsilon

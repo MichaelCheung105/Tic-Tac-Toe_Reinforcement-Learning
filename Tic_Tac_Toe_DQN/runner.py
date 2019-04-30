@@ -83,6 +83,9 @@ class Runner:
 
     @staticmethod
     def get_model_state(state):
+        if config.state_dim_reduction:
+            state = state[:, :, 0] + state[:, :, 1] * -1
+
         model_state = np.expand_dims(state, axis=0)
         return model_state
 

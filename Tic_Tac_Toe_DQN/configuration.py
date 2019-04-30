@@ -25,6 +25,9 @@ class Config:
         # Reward Shaping
         self.reward = 10
 
+        # Model State
+        self.state_dim_reduction = True
+
         # Logging
         self.log_frequency = 10000
 
