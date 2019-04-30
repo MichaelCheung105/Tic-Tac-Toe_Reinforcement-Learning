@@ -21,6 +21,7 @@ class Agent:
 
     def get_action(self, model_state, epsilon):
         is_random = np.random.rand() < epsilon
+        model_state = np.expand_dims(model_state, axis=0)
         q_value_list = self.eval_net.model.predict(model_state)[0] if not is_random else np.random.rand(9)
         feasible_action_mask = self.get_feasible_action_mask(model_state[0])
         max_index = np.argmax(q_value_list[feasible_action_mask])
@@ -29,7 +30,10 @@ class Agent:
 
     @staticmethod
     def get_feasible_action_mask(state):
-        mask = np.sum(state, axis=2).reshape(-1) == 0
+        if config.state_dim_reduction:
+            mask = state.reshape(-1) == 0
+        else:
+            mask = np.sum(state, axis=2).reshape(-1) == 0
         return mask
 
     def store_s_a(self, state, action):

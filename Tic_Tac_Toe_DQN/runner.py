@@ -64,12 +64,12 @@ class Runner:
             epsilon = self.determine_epsilon(episode, player, test_condition)
             model_state = self.get_model_state(state)
             action = self.player[player].get_action(model_state, epsilon)
-            self.player[player].store_s_a(state, action)
+            self.player[player].store_s_a(model_state, action)
             state, reward, done, info = self.env.step(action, player)
-            self.player[1 - player].store_r_s_d(-reward, state, done)
+            self.player[1 - player].store_r_s_d(-reward, model_state, done)
 
             if done:
-                self.player[player].store_r_s_d(reward, state, done)
+                self.player[player].store_r_s_d(reward, model_state, done)
 
             print(f"{config.run_mode} mode, episode {episode}: {info}")
 
@@ -85,9 +85,9 @@ class Runner:
     def get_model_state(state):
         if config.state_dim_reduction:
             state = state[:, :, 0] + state[:, :, 1] * -1
+            state = np.expand_dims(state, axis=2)
 
-        model_state = np.expand_dims(state, axis=0)
-        return model_state
+        return state
 
     def determine_epsilon(self, episode, player, test_condition):
         if player == 0 and test_condition == "first_player_random":
