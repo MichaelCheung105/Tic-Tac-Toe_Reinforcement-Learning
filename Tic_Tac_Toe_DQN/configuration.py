@@ -4,7 +4,7 @@ class Config:
         self.experiment_name = 'experiment_name'
         self.run_mode = None
         self.enable_agent = True
-        self.total_train_episode = 150000
+        self.total_train_episode = 100000
         self.intermediate_test_frequency = 1000
         self.number_of_episode_per_intermediate_test = 100
 
@@ -26,10 +26,13 @@ class Config:
         self.reward = 10
 
         # Model State
-        self.state_dim_reduction = True
+        self.state_dim_reduction = False
 
         # Logging
         self.log_frequency = 10000
+        self.log_result = True
+        self.log_experience_pool = True
+        self.log_sampled_experience = True
 
 
 config = Config()

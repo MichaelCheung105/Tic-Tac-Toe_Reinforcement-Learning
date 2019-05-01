@@ -5,9 +5,9 @@ from configuration import config
 
 
 class Agent:
-    def __init__(self):
+    def __init__(self, player):
         self.action_list = np.array(range(9))
-        self.experience_pool = ExperiencePool()
+        self.experience_pool = ExperiencePool(player)
         self.gamma = config.gamma
         self.train_frequency = config.train_frequency
         self.target_net_update_threshold = config.target_net_update_threshold

@@ -114,8 +114,10 @@ class Runner:
 
     def export_logs(self, episode):
         for log_category, log_content in logs.items():
-            if log_category == 'result':
+            if log_category == 'result' and config.log_result:
                 self.log_results(episode, log_category, log_content)
+            elif log_category == 'sampled_experience' and config.log_sampled_experience:
+                self.log_sampled_experience(episode, log_category, log_content)
             else:
                 pass
 
@@ -138,28 +140,41 @@ class Runner:
         plt.close()
 
     def log_experience_pool(self, episode):
-        experience_pool_dict = {}
-        for key, agent in self.player.items():
-            experience_pool_dict[f"player_{key+1}"] = {}
-            player_dict = experience_pool_dict[f"player_{key+1}"]
-            player_dict["states"] = agent.experience_pool.state
-            player_dict["actions"] = agent.experience_pool.action
-            player_dict["rewards"] = agent.experience_pool.reward
-            player_dict["next_states"] = agent.experience_pool.next_state
-            player_dict["next_actions"] = agent.experience_pool.next_action
-            player_dict["done"] = agent.experience_pool.done
+        if config.log_experience_pool:
+            experience_pool_dict = {}
+            for key, agent in self.player.items():
+                experience_pool_dict[f"player_{key+1}"] = {}
+                player_dict = experience_pool_dict[f"player_{key+1}"]
+                player_dict["states"] = agent.experience_pool.state
+                player_dict["actions"] = agent.experience_pool.action
+                player_dict["rewards"] = agent.experience_pool.reward
+                player_dict["next_states"] = agent.experience_pool.next_state
+                player_dict["next_actions"] = agent.experience_pool.next_action
+                player_dict["done"] = agent.experience_pool.done
 
-        directory_path = f"./logs/{config.experiment_name}/experience_pool"
+            directory_path = f"./logs/{config.experiment_name}/experience_pool"
+            if not os.path.exists(directory_path):
+                os.makedirs(directory_path)
+            output_path = os.path.join(directory_path, f"experience_pool_output_Ep{episode}.p")
+            with open(output_path, 'wb') as experience_pool_output:
+                pickle.dump(experience_pool_dict, experience_pool_output)
+
+    @staticmethod
+    def log_sampled_experience(episode, log_category, log_content):
+        directory_path = f"./logs/{config.experiment_name}/experience_pool/"
         if not os.path.exists(directory_path):
             os.makedirs(directory_path)
-        output_path = os.path.join(directory_path, f"experience_pool_output_Ep{episode}.p")
-        with open(output_path, 'wb') as experience_pool_output:
-            pickle.dump(experience_pool_dict, experience_pool_output)
+
+        for player, info in log_content.items():
+            for info_category, detail in info.items():
+                if info_category == 'per_sampling_info':
+                    output_path = os.path.join(directory_path, f"{log_category}_of_{player}_at_episode_{episode}.csv")
+                    pd.DataFrame.from_dict(detail, orient='index').to_csv(output_path)
 
 
 if __name__ == "__main__":
     env = Environment()
-    first_mover = Agent()
-    second_mover = Agent()
+    first_mover = Agent(player=1)
+    second_mover = Agent(player=2)
     runner = Runner(env=env, first_mover=first_mover, second_mover=second_mover)
     runner.start()
